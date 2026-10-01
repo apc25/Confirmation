@@ -14,6 +14,8 @@ import ar
 import generate
 
 FONT = "맑은 고딕"
+# Basic-info boxes: (pale background, title color) so neighbouring boxes are easy to tell apart.
+SECTIONS = {"감사인": ("#E6F0FA", "#2F5A8A"), "날짜": ("#E6F4EA", "#2E6B45"), "회사": ("#FAF0E2", "#8A5A1F")}
 
 
 class App:
@@ -36,6 +38,11 @@ class App:
         style = ttk.Style()
         style.configure("Treeview", rowheight=self.px(26))
         style.configure("TNotebook.Tab", padding=(self.px(12), self.px(4)))
+        for name, (bg, fg) in SECTIONS.items():
+            style.configure(f"{name}.TLabelframe", background=bg)
+            style.configure(f"{name}.TLabelframe.Label", foreground=fg, font=(FONT, 11, "bold"))
+            style.configure(f"{name}.TLabel", background=bg)
+            style.configure(f"{name}.TFrame", background=bg)
 
         f = ttk.Frame(root, padding=10)
         f.pack(fill="both", expand=True)
@@ -71,10 +78,11 @@ class App:
         self.refresh_ar()
         root.after(100, self.poll)
 
-    def entry_rows(self, box, fields):
+    def entry_rows(self, box, fields, section=None):
         widgets = {}
         for i, (key, label, kind) in enumerate(fields):
-            ttk.Label(box, text=label).grid(row=i, column=0, sticky="w", padx=(0, 8), pady=2)
+            ttk.Label(box, text=label, style=f"{section}.TLabel" if section else "TLabel").grid(
+                row=i, column=0, sticky="w", padx=(0, 8), pady=2)
             if kind == "yn":
                 w = ttk.Combobox(box, textvariable=self.vars[key], values=("여", "부"), state="readonly", width=6)
                 w.grid(row=i, column=1, sticky="w", pady=2)
@@ -93,43 +101,42 @@ class App:
         def common(group):
             return [(k, lab, "text") for k, lab in generate.FIELDS[group]]
 
-        box = ttk.LabelFrame(tab, text="감사인", padding=8)
-        box.grid(row=0, column=0, sticky="nsew", padx=4, pady=4)
-        box.columnconfigure(1, weight=1)
-        self.entry_rows(box, common("감사인"))
+        def section(name, **grid):
+            box = ttk.LabelFrame(tab, text=name, padding=8, style=f"{name}.TLabelframe")
+            box.grid(sticky="nsew", padx=4, pady=4, **grid)
+            box.columnconfigure(1, weight=1)
+            self.entry_rows(box, common(name), section=name)
+            return box
 
-        box = ttk.LabelFrame(tab, text="날짜", padding=8)
-        box.grid(row=1, column=0, sticky="nsew", padx=4, pady=4)
-        box.columnconfigure(1, weight=1)
-        self.entry_rows(box, common("날짜"))
+        section("감사인", row=0, column=0)
+        box = section("날짜", row=1, column=0)
         ttk.Label(box, text="날짜는 2026-12-31 형식. 조회기준일을 바꾸면 유효기간과 양식 탭의 기간이 다시 계산됩니다.",
-                  foreground="gray", wraplength=self.px(470)).grid(row=3, column=0, columnspan=2, sticky="w", pady=(6, 0))
-
-        box = ttk.LabelFrame(tab, text="회사", padding=8)
-        box.grid(row=0, column=1, rowspan=2, sticky="nsew", padx=4, pady=4)
-        box.columnconfigure(1, weight=1)
-        self.entry_rows(box, common("회사"))
+                  foreground="gray", wraplength=self.px(470), style="날짜.TLabel").grid(
+            row=3, column=0, columnspan=2, sticky="w", pady=(6, 0))
+        box = section("회사", row=0, column=1, rowspan=2)
         self.biz_box(box, len(generate.FIELDS["회사"]))
 
     def biz_box(self, parent, start):
-        ttk.Label(parent, text="사업자등록번호").grid(row=start, column=0, sticky="nw", pady=(8, 2))
+        ttk.Label(parent, text="사업자등록번호", style="회사.TLabel").grid(row=start, column=0, sticky="nw", pady=(8, 2))
         self.biz = ttk.Treeview(parent, columns=("no", "name"), show="headings", height=4)
         self.biz.heading("no", text="사업자등록번호")
         self.biz.heading("name", text="사업장명")
         self.biz.column("no", width=self.px(150))
         self.biz.column("name", width=self.px(170))
         self.biz.grid(row=start, column=1, sticky="we", pady=(8, 2))
-        add = ttk.Frame(parent)
+        add = ttk.Frame(parent, style="회사.TFrame")
         add.grid(row=start + 1, column=1, sticky="we")
         self.biz_no, self.biz_name = tk.StringVar(), tk.StringVar()
-        ttk.Entry(add, textvariable=self.biz_no, width=16).pack(side="left")
-        ttk.Entry(add, textvariable=self.biz_name, width=14).pack(side="left", padx=4)
-        ttk.Button(add, text="추가", width=5, command=self.biz_add).pack(side="left")
+        ttk.Label(add, text="번호", style="회사.TLabel").pack(side="left", padx=(0, 4))
+        ttk.Entry(add, textvariable=self.biz_no, width=13).pack(side="left")
+        ttk.Label(add, text="사업장명", style="회사.TLabel").pack(side="left", padx=(8, 4))
+        ttk.Entry(add, textvariable=self.biz_name, width=9).pack(side="left")
+        ttk.Button(add, text="추가", width=5, command=self.biz_add).pack(side="left", padx=(6, 0))
         ttk.Button(add, text="삭제", width=5, command=self.biz_del).pack(side="left", padx=(4, 0))
-        ttk.Label(parent, text="왼쪽 칸에 번호, 오른쪽 칸에 사업장명을 넣고 [추가]. "
+        ttk.Label(parent, text="번호와 사업장명을 넣고 [추가]. "
                                "2개 이상이면 요구서에 '별도 첨부'로 적고, 목록 쪽을 조회서 끝에 붙입니다.",
-                  foreground="gray", wraplength=self.px(470)).grid(row=start + 2, column=0, columnspan=2,
-                                                                   sticky="w", pady=(6, 0))
+                  foreground="gray", wraplength=self.px(470), style="회사.TLabel").grid(
+            row=start + 2, column=0, columnspan=2, sticky="w", pady=(6, 0))
 
     def form_tab(self, kind, spec):
         tab = ttk.Frame(self.nb, padding=8)
