@@ -10,6 +10,7 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 import pythoncom
 
+import ar
 import generate
 
 FONT = "맑은 고딕"
@@ -163,7 +164,7 @@ class App:
         ttk.Button(box, text="찾아보기", command=self.pick_ar).grid(row=0, column=1, padx=(6, 0))
         ttk.Button(box, text="다시 읽기", command=self.refresh_ar).grid(row=0, column=2, padx=(6, 0))
         ttk.Button(box, text="빈 입력 양식 만들기", command=self.new_ar_input).grid(row=0, column=3, padx=(6, 0))
-        rows = generate.AR_ROWS
+        rows = ar.AR_ROWS
         ttk.Label(box, text="기본정보 탭의 감사인명·담당 공인회계사·전화·회사명·대표자·작성일·조회기준일을 씁니다. "
                             f"한 거래처의 채권 또는 채무가 {rows}줄을 넘으면 표에 {rows - 1}줄과 '기타(별지 참조)'를 넣고 "
                             "전체 내역을 별지로 붙입니다.",
@@ -197,15 +198,15 @@ class App:
             self.ar_status.configure(text="거래처 입력 파일을 고르세요. 없으면 [빈 입력 양식 만들기]로 만든 뒤 채웁니다.")
             return
         try:
-            letters = generate.load_ar(path)
+            letters = ar.load_ar(path)
         except Exception as e:
             self.ar_status.configure(text="입력 파일을 확인해야 합니다. 아래 로그를 보세요.")
             self.write(f"[채권채무] {e}")
             return
         for i, ((no, name), lines) in enumerate(letters, 1):
-            secs = {sec: [x for x in lines if x["kind"] == sec] for sec in generate.AR_KINDS}
-            total = {sec: generate.fmt_amount(sum(x["amount"] for x in v)) for sec, v in secs.items()}
-            extra = "별지" if any(len(v) > generate.AR_ROWS for v in secs.values()) else ""
+            secs = {sec: [x for x in lines if x["kind"] == sec] for sec in ar.AR_KINDS}
+            total = {sec: ar.fmt_amount(sum(x["amount"] for x in v)) for sec, v in secs.items()}
+            extra = "별지" if any(len(v) > ar.AR_ROWS for v in secs.values()) else ""
             self.ar_tree.insert("", "end", values=(i, no or f"{i:03d}", name, total["채권"], total["채무"],
                                                    len(lines), extra))
         self.ar_status.configure(text=f"이 파일로 만들 채권채무조회서: {len(letters)}통")
@@ -220,7 +221,7 @@ class App:
         p = filedialog.asksaveasfilename(title="빈 입력 양식 저장", defaultextension=".xlsx",
                                          initialfile="채권채무_거래처목록.xlsx", filetypes=[("Excel", "*.xlsx")])
         if p:
-            generate.write_ar_input_template(p)
+            ar.write_ar_input_template(p)
             self.ar_path.set(p)
             self.refresh_ar()
             os.startfile(p)
@@ -323,12 +324,12 @@ class App:
             messagebox.showwarning("거래처 입력 파일", "채권채무 거래처 입력 파일을 먼저 고르세요.")
             return
         try:
-            generate.prepare_ar(raw)
-            generate.load_ar(raw["채권채무목록"])
+            ar.prepare_ar(raw)
+            ar.load_ar(raw["채권채무목록"])
         except generate.InputError as e:
             messagebox.showwarning("입력 확인", str(e))
             return
-        self.begin(generate.run_ar, raw, Path(raw["채권채무목록"]))
+        self.begin(ar.run_ar, raw, Path(raw["채권채무목록"]))
 
     def begin(self, fn, raw, path):
         self.btn.configure(state="disabled")
