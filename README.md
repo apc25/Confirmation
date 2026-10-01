@@ -211,3 +211,7 @@ uv pip install --python .venv\Scripts\python.exe pyinstaller pywin32 openpyxl py
 - `입력값.json`: 담당 CPA 연락처와 환급계좌가 들어 있다.
 - `out/`: 고객사 조회서가 들어 있다.
 - 빌드·실행 환경 파일: `dist/`, `build/`, `.venv/`
+
+---
+
+제작: [apc25](https://github.com/apc25)

@@ -61,6 +61,8 @@ class App:
 
         self.log = scrolledtext.ScrolledText(f, height=7, state="disabled", font=(FONT, 10))
         self.log.grid(row=2, column=0, sticky="nsew")
+        ttk.Label(f, text="제작: apc25", foreground="gray", font=(FONT, 9)).grid(row=3, column=0, sticky="e",
+                                                                              pady=(4, 0))
 
         self.load()
         self.vars["조회기준일"].trace_add("write", self.recalc)
