@@ -17,6 +17,8 @@ import openpyxl
 
 from hwpauto import Hwp
 
+VERSION = "0.1.0"  # bump with README "버전 기록": patch = fix, minor = feature, major = input format change
+
 HERE = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
 TPL_DIR = HERE / "templates"
 SAVED = HERE / "입력값.json"
@@ -167,6 +169,7 @@ def write_record(out, raw, kinds, biz, made):
     ws = wb.active
     ws.title = "입력값"
     ws.append(["구분", "항목", "값"])
+    ws.append(["프로그램", "버전", VERSION])
     for group, fields in FIELDS.items():
         for k, label in fields:
             ws.append([group, label, raw[k]])
@@ -447,6 +450,7 @@ def run_ar(raw, path, log=print):
     ws = wb.active
     ws.title = "입력값"
     ws.append(["항목", "값"])
+    ws.append(["프로그램 버전", VERSION])
     labels = {k: lab for group in FIELDS.values() for k, lab in group}
     for k in AR_FIELDS:
         ws.append([labels[k], raw[k]])

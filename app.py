@@ -26,7 +26,7 @@ class App:
         self.list_path = tk.StringVar()
         self.ar_path = tk.StringVar()
         self.kinds = []
-        root.title("금융거래조회서 생성")
+        root.title(f"금융거래조회서 생성 v{generate.VERSION}")
         root.protocol("WM_DELETE_WINDOW", self.close)
         scale = root.winfo_fpixels("1i") / 96
         self.px = lambda n: int(n * scale)
@@ -61,7 +61,7 @@ class App:
 
         self.log = scrolledtext.ScrolledText(f, height=7, state="disabled", font=(FONT, 10))
         self.log.grid(row=2, column=0, sticky="nsew")
-        ttk.Label(f, text="제작: apc25", foreground="gray", font=(FONT, 9)).grid(row=3, column=0, sticky="e",
+        ttk.Label(f, text=f"v{generate.VERSION} · 제작: apc25", foreground="gray", font=(FONT, 9)).grid(row=3, column=0, sticky="e",
                                                                               pady=(4, 0))
 
         self.load()
