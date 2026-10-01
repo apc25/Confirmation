@@ -1,0 +1,10 @@
+# Personal data (CPA contact, refund account) and client output — never commit
+입력값.json
+out/
+
+# Build and environment
+.venv/
+build/
+dist/
+__pycache__/
+*.pyc
