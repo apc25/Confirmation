@@ -260,6 +260,15 @@ uv pip install --python .venv\Scripts\python.exe pyinstaller pywin32 openpyxl py
 - `out/`: 고객사 조회서가 들어 있다.
 - 빌드·실행 환경 파일: `dist/`, `build/`, `.venv/`
 
+## License
+
+이 저장소의 코드는 GNU General Public License v3.0(GPL-3.0)을 따른다. 전문은 [`LICENSE`](LICENSE)에 있다.
+
+Copyright (C) 2026 apc25
+
+- 고쳐서 배포하는 경우(exe 포함) 고친 코드도 GPL-3.0으로 공개해야 한다. exe를 남에게 줄 때는 이 저장소 주소를 같이 알려 준다.
+- `templates/`의 한글 양식 7개는 이 라이선스에 포함되지 않는다. 한국공인회계사회 2020 금융거래조회서 양식 6종과 채권채무조회서 양식을 이 도구가 채울 수 있게 바꾼 것이다(바꾼 내용은 [원본 양식과 다른 점](#원본-양식과-다른-점)). 원본 양식의 권리는 원저작자에게 있다.
+
 ---
 
 제작: [apc25](https://github.com/apc25)
